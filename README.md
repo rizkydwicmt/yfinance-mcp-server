@@ -53,7 +53,7 @@ Works with **any ticker supported by Yahoo Finance**:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone or copy the project
-git clone <your-repo-url> yfinance-mcp-server
+git clone https://github.com/rizkydwicmt/yfinance-mcp-server.git yfinance-mcp-server
 cd yfinance-mcp-server
 
 # Create venv with Python 3.12 and install
