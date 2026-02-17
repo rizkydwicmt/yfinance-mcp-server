@@ -52,7 +52,7 @@ Works with **any ticker supported by Yahoo Finance**:
 # Install uv (if not already installed)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Clone or copy the project
+# Clone the project from GitHub
 git clone https://github.com/rizkydwicmt/yfinance-mcp-server.git yfinance-mcp-server
 cd yfinance-mcp-server
 

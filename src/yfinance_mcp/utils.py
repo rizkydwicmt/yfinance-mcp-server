@@ -26,8 +26,22 @@ class FinanceEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
+def _clean_nan(obj: Any) -> Any:
+    """Recursively replace NaN/Inf float values with None."""
+    if isinstance(obj, dict):
+        return {k: _clean_nan(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_clean_nan(v) for v in obj]
+    if isinstance(obj, float):
+        import math
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+    return obj
+
+
 def to_json(data: Any, indent: int = 2) -> str:
     """Serialize data to JSON string with financial type handling."""
+    data = _clean_nan(data)
     return json.dumps(data, cls=FinanceEncoder, indent=indent, ensure_ascii=False)
 
 
@@ -56,6 +70,12 @@ def df_to_records(df: pd.DataFrame, max_rows: int = 100) -> list[dict]:
 
     # Clean NaN values
     df = df.where(pd.notna(df), None)
+
+    # Convert any Timestamp column names to strings (e.g., financial statements)
+    df.columns = [
+        col.isoformat() if isinstance(col, (pd.Timestamp, datetime)) else col
+        for col in df.columns
+    ]
 
     records = df.to_dict(orient="records")
 

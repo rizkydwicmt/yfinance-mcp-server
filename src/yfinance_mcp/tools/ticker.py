@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import yfinance as yf
+import pandas as pd
 
 from yfinance_mcp.types import (
     STOCK_INFO_FIELDS,
@@ -145,8 +146,23 @@ def get_financials(
 
         if isinstance(df, dict) and "error" in df:
             result[name] = df
+        elif hasattr(df, "empty") and not df.empty:
+            # Financial DataFrames: index=line items, columns=Timestamp dates
+            # Convert to {date_str: {line_item: value, ...}, ...}
+            periods = {}
+            for col in df.columns:
+                date_key = col.isoformat() if hasattr(col, "isoformat") else str(col)
+                period_data = {}
+                for idx, val in df[col].items():
+                    item_name = str(idx)
+                    if pd.notna(val):
+                        period_data[item_name] = round(float(val), 2) if isinstance(val, float) else val
+                    else:
+                        period_data[item_name] = None
+                periods[date_key] = period_data
+            result[name] = periods
         else:
-            result[name] = df_to_records(df) if hasattr(df, "empty") else df
+            result[name] = {}
 
     return to_json(result)
 

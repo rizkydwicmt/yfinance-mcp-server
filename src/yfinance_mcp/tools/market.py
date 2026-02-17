@@ -68,7 +68,7 @@ def compare_stocks(symbols: str) -> str:
 def get_market_movers(mover_type: str = "gainers") -> str:
     """Get top market movers: gainers, losers, or most active stocks.
 
-    Uses yfinance's Screener to fetch current market movers.
+    Uses yfinance's screen() to fetch current market movers.
 
     Args:
         mover_type: Type of movers. Valid values: 'gainers', 'losers',
@@ -86,15 +86,12 @@ def get_market_movers(mover_type: str = "gainers") -> str:
     screener_key = screener_map.get(mover_type, "day_gainers")
 
     try:
-        screener = yf.Screener()
-        screener.set_default_body(screener_key)
-        result = screener.response
+        result = yf.screen(screener_key, count=20)
 
-        if result and "quotes" in result.get("body", {}):
-            quotes = result["body"]["quotes"]
-            # Clean up the data
+        if result and "quotes" in result:
+            quotes = result["quotes"]
             movers = []
-            for q in quotes[:20]:  # Top 20
+            for q in quotes[:20]:
                 mover = {
                     "symbol": q.get("symbol"),
                     "name": q.get("shortName") or q.get("longName"),
@@ -115,7 +112,6 @@ def get_market_movers(mover_type: str = "gainers") -> str:
         return to_json({"type": mover_type, "movers": [], "message": "No data available."})
 
     except Exception as e:
-        # Fallback: try alternative approach
         return to_json({
             "type": mover_type,
             "error": str(e),
@@ -132,7 +128,7 @@ def screen_stocks(
 ) -> str:
     """Screen stocks by fundamental criteria.
 
-    Note: This uses yfinance's Screener with predefined screens.
+    Note: This uses yfinance's screen() with predefined screens.
     For complex custom queries, results may be limited.
 
     Args:
@@ -146,15 +142,12 @@ def screen_stocks(
         JSON string with screened stocks matching criteria.
     """
     try:
-        # Use yfinance screener with a broad starting set
-        screener = yf.Screener()
-        screener.set_default_body("most_actives")
-        result = screener.response
+        result = yf.screen("most_actives", count=100)
 
-        if not result or "quotes" not in result.get("body", {}):
+        if not result or "quotes" not in result:
             return to_json({"stocks": [], "message": "Screener returned no data."})
 
-        quotes = result["body"]["quotes"]
+        quotes = result["quotes"]
         filtered = []
 
         for q in quotes:
@@ -195,3 +188,4 @@ def screen_stocks(
 
     except Exception as e:
         return to_json({"error": str(e)})
+
