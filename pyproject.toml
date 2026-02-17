@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "yfinance-mcp-server"
+version = "1.0.0"
+description = "A comprehensive MCP server for Yahoo Finance data powered by yfinance"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "yfinance>=0.2.40",
+    "mcp[cli]>=1.0.0",
+]
+
+[project.scripts]
+yfin-mcp = "yfinance_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/yfinance_mcp"]
