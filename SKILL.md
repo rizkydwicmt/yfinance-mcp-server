@@ -147,3 +147,87 @@ This server works with **any ticker supported by Yahoo Finance**:
 1. `tool_get_market_movers` → find trending stocks
 2. `tool_screen_stocks` → filter by criteria
 3. `tool_get_stock_info` → deep dive on candidates
+
+---
+
+## Installation
+
+### Quick Install (install.sh)
+
+The included `install.sh` automates everything — uv setup, Python 3.12 venv, package install, mcporter config, and OpenClaw skill registration:
+
+```bash
+# Clone the repository on your server
+git clone https://github.com/rizkydwicmt/yfinance-mcp-server.git
+cd yfinance-mcp-server
+
+# Run the installer
+chmod +x install.sh
+./install.sh
+```
+
+The installer will:
+1. ✅ Check for `pyproject.toml` in the project directory
+2. ✅ Install `uv` if not already present
+3. ✅ Create a Python 3.12 virtual environment
+4. ✅ Install `yfinance-mcp-server` + all dependencies
+5. ✅ Verify all 12 tools load correctly
+6. ✅ Add `yfinance` to your mcporter config (auto-detected)
+7. ✅ Install `SKILL.md` to OpenClaw skills directory
+
+### Environment Variables
+
+Customize the installer behavior with environment variables:
+
+```bash
+# Change project location
+YFINANCE_PROJECT_DIR=/opt/mcp/yfinance ./install.sh
+
+# Use a different Python version
+YFINANCE_PYTHON_VERSION=3.11 ./install.sh
+
+# Custom venv location
+YFINANCE_VENV_DIR=/opt/venvs/yfinance ./install.sh
+
+# Specify mcporter config path
+MCPORTER_CONFIG=/etc/clawd/mcporter.json ./install.sh
+
+# Custom OpenClaw directory
+CLAWD_DIR=/opt/clawd ./install.sh
+
+# Skip mcporter / skill steps
+SKIP_MCPORTER=true ./install.sh
+SKIP_SKILL=true ./install.sh
+```
+
+### Manual Install
+
+```bash
+# 1. Clone repository
+git clone https://github.com/rizkydwicmt/yfinance-mcp-server.git
+cd yfinance-mcp-server
+
+# 2. Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 3. Create venv + install
+uv venv .venv --python 3.12
+uv pip install -e . --python .venv/bin/python
+
+# 4. Add to mcporter.json
+# {"mcpServers": {"yfinance": {"command": "/path/to/.venv/bin/yfin-mcp"}}}
+
+# 5. Install skill
+mkdir -p ${CLAWD_DIR}/skills/yfinance
+cp SKILL.md ${CLAWD_DIR}/skills/yfinance/SKILL.md
+```
+
+### Verify
+
+```bash
+# Check tools load
+mcporter --config ${CLAWD_DIR}/config/mcporter.json list yfinance --schema
+
+# Live test
+mcporter --config ${CLAWD_DIR}/config/mcporter.json call yfinance.tool_get_stock_price symbol=AAPL
+```
